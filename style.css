@@ -1,0 +1,278 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+.c-blue{
+    color: #1C1EF8;
+}
+.bg-blue1{
+    background-color: #ECF6FF;
+}
+
+.c-blue1{
+    color: #ECF6FF;
+}
+
+.c-gris{
+    color: #F3F3F3;
+}
+.c-noir{
+    color: #000000;
+}
+
+.c-noir1{
+    color: #141B38;
+}
+
+header{
+    padding: 15px;
+}
+
+.btn1{
+    padding: 12px 20px;
+    border-radius: 8px;
+    background-color: #1C1EF8;
+    color: #FFFFFF;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.absolute{
+    position: absolute;
+}
+.relative{
+    position: relative;
+}
+
+.flex{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.bold{
+    font-weight: bold;
+}
+
+.img-auto-auto{
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.icon-200-50{
+    width: 200px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.content-33p-auto{
+    width: 33.33%;
+    height: auto;
+}
+.content-40p-auto{
+    width: 40%;
+    height: auto;
+}
+.content-50p-auto{
+    width: 50%;
+    height: auto;
+}
+.content-60p-auto{
+    width: 60%;
+    height: auto;
+}
+.content-100p-auto{
+    width: 100%;
+    height: auto;
+}
+.content-start{
+    align-content: flex-start;
+}
+.content-center{
+    align-content: center;
+    align-items: center;
+}
+.text-center{
+    text-align: center;
+}
+
+.padding-5{
+    padding: 5px;
+}
+.padding-10{
+    padding: 10px;
+}
+.padding-15{
+    padding: 15px;
+}
+.padding-h-5{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.padding-h-15{
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.padding-v-15{
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+.padding-b-10{
+    padding-bottom: 10px;
+}
+.padding-b-15{
+    padding-bottom: 15px;
+}
+.padding-b-30{
+    padding-bottom: 30px;
+}
+.padding-t-15{
+    padding-top: 15px;
+}
+.padding-t-20{
+    padding-top: 20px;
+}
+.padding-t-80{
+    padding-top: 140px;
+}
+.s25{
+    font-size: 25px;
+}
+.s30{
+    font-size: 20px;
+    line-height: 1.4;
+}
+.s32{
+    font-size: 32px;
+}
+.s62{
+    font-size: 62px;
+}
+.s88{
+    font-size: 88px;
+}
+
+/* Feature Cards */
+.card-feature{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: flex-start;
+    padding: 0 15px;
+}
+
+.card-feature img{
+    height: 250px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.card-feature .title{
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-feature .desc{
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* How it works Steps */
+.steps-container {
+    gap: 10px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: flex-start; /* 让所有卡片顶部对齐 */
+}
+
+.step-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-height: 280px; /* 固定卡片总高度，确保所有卡片一样高 */
+}
+
+.step-title {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: #000;
+    min-height: 30px; /* 固定标题高度，所有标题对齐 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-image {
+    width: 100%;
+    height: 150px; /* 固定图片容器高度，所有图片高度一致 */
+    background-color: #fff;
+    border-right: 8px solid #1C1EF8;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.step-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.step-text {
+    font-size: 16px;
+    text-align: center;
+    line-height: 1.4;
+    min-height: 60px; /* 固定文字区域高度，所有底部对齐 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.arrow-icon {
+    width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 75px; /* 让箭头和图片的垂直位置对齐 */
+}
+
+.arrow-icon img {
+    width: 100%;
+    height: auto;
+}
+
+.victory-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.arrow-down {
+    width: 30px;
+    margin-bottom: 10px;
+}
+
+.arrow-down img {
+    width: 100%;
+    height: auto;
+}
+
+/* 底部图片一左一右 */
+footer {
+  display: flex;
+  justify-content: space-between; /* 左右分开 */
+  align-items: center; /* 垂直居中 */
+  padding: 20px 15px; /* 上下左右间距，可调整 */
+}
+
