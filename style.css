@@ -306,7 +306,7 @@ header{
     cursor: pointer;
 }
 
-@media only screen and (max-width: 735px) {
+@media only screen and (max-width: 780px) {
     .s32{
         font-size: 20px;
     }
@@ -321,7 +321,7 @@ header{
         height: auto;
     }
     .s62{
-        font-size: 25px;
+        font-size: 28px;
     }
     .d-padding-b-30-m-padding-b-15{
         padding-bottom: 15px;
