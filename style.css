@@ -192,7 +192,7 @@ header{
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    align-items: flex-start; /* 让所有卡片顶部对齐 */
+    align-items: flex-start;
 }
 
 .step-card {
@@ -200,14 +200,14 @@ header{
     flex-direction: column;
     align-items: center;
     flex: 1;
-    min-height: 280px; /* 固定卡片总高度，确保所有卡片一样高 */
+    min-height: 280px;
 }
 
 .step-title {
     font-size: 22px;
     margin-bottom: 10px;
     color: #000;
-    min-height: 30px; /* 固定标题高度，所有标题对齐 */
+    min-height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,7 +215,7 @@ header{
 
 .step-image {
     width: 100%;
-    height: 150px; /* 固定图片容器高度，所有图片高度一致 */
+    height: 150px;
     background-color: #fff;
     border-right: 8px solid #1C1EF8;
     overflow: hidden;
@@ -232,7 +232,7 @@ header{
     font-size: 16px;
     text-align: center;
     line-height: 1.4;
-    min-height: 60px; /* 固定文字区域高度，所有底部对齐 */
+    min-height: 60px; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,7 +243,7 @@ header{
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 75px; /* 让箭头和图片的垂直位置对齐 */
+    padding-top: 75px;
 }
 
 .arrow-icon img {
@@ -268,11 +268,24 @@ header{
     height: auto;
 }
 
-/* 底部图片一左一右 */
-footer {
+
+.page-footer {
   display: flex;
-  justify-content: space-between; /* 左右分开 */
-  align-items: center; /* 垂直居中 */
-  padding: 20px 15px; /* 上下左右间距，可调整 */
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 20px 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+.page-footer img {
+  max-width: 45%;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.pointer{
+    cursor: pointer;
+}
