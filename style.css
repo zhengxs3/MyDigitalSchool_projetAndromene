@@ -53,6 +53,11 @@ header{
     align-items: center;
     justify-content: center;
 }
+.m-flex{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .bold{
     font-weight: bold;
 }
@@ -79,6 +84,10 @@ header{
     height: auto;
 }
 .content-50p-auto{
+    width: 50%;
+    height: auto;
+}
+.d-content-50p-auto-m-content-100p-auto{
     width: 50%;
     height: auto;
 }
@@ -118,6 +127,10 @@ header{
     padding-left: 15px;
     padding-right: 15px;
 }
+.padding-v-5{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
 .padding-v-15{
     padding-top: 15px;
     padding-bottom: 15px;
@@ -129,6 +142,9 @@ header{
     padding-bottom: 15px;
 }
 .padding-b-30{
+    padding-bottom: 30px;
+}
+.d-padding-b-30-m-padding-b-15{
     padding-bottom: 30px;
 }
 .padding-t-15{
@@ -180,7 +196,7 @@ header{
 }
 
 .card-feature .desc{
-    min-height: 100px;
+    min-height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -288,4 +304,34 @@ header{
 
 .pointer{
     cursor: pointer;
+}
+
+@media only screen and (max-width: 735px) {
+    .s32{
+        font-size: 20px;
+    }
+    .s88{
+        font-size: 60px;
+    }
+    .m-flex{
+        display: block;
+    }
+    .d-content-50p-auto-m-content-100p-auto{
+        width: 100%;
+        height: auto;
+    }
+    .s62{
+        font-size: 25px;
+    }
+    .d-padding-b-30-m-padding-b-15{
+        padding-bottom: 15px;
+    }
+    .content-33p-auto{
+        width: 100%;
+        height: auto;
+    }
+
+
+
+
 }
