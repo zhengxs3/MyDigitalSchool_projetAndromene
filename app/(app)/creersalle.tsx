@@ -3,17 +3,22 @@ import { router } from 'expo-router';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function CreerSalleScreen() {
-    const handleLogin = () => {
-        Alert.alert(
-          'Succès',
-          'Votre compte a été connecté avec succès !',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/(app)/choixsalle'),
-            },
-          ]
-        );
+    const handleSalle = () => {
+        if (Platform.OS === 'web') {
+            window.alert('Votre compte a été créé avec succès !');
+            router.push('/(app)/nbjoueur');
+        } else {
+            Alert.alert(
+            'Succès',
+            'Votre compte a été créé avec succès !',
+            [
+                {
+                text: 'OK',
+                onPress: () => router.push('/(app)/nbjoueur'),
+                },
+            ]
+            );
+        }
       };
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={80}>
@@ -30,54 +35,22 @@ export default function CreerSalleScreen() {
             </View>
 
             <View style={styles.card}>
-                <Text style={styles.title}>Se connecter</Text>
+                <Text style={styles.title}>Nom de la salle</Text>
 
-                <Text style={styles.label}>Pseudo</Text>
-
+                <Text style={styles.label}>Nom</Text>
                 <View style={styles.inputContainer}>
-                    <Image
-                        source={require('@/assets/images/login1.png')}
-                        style={styles.inputIcon}
-                        contentFit="contain"
-                    />
-
                     <TextInput
                         style={styles.textInput}
-                        placeholder="Votre pseudonyme"
-                        placeholderTextColor="#6B7280"
-                    />
-                </View>
-
-                <Text style={styles.label}>Mot de passe</Text>
-
-                <View style={styles.inputContainer}>
-                    <Image
-                        source={require('@/assets/images/login2.png')}
-                        style={styles.inputIcon}
-                        contentFit="contain"
-                    />
-
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="••••••••"
+                        placeholder="••••••"
                         placeholderTextColor="#6B7280"
                         secureTextEntry
                     />
                 </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Se connecter</Text>
+                <TouchableOpacity style={styles.button} onPress={handleSalle}>
+                <Text style={styles.buttonText}>Entrer</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.bottomText}>
-                Pas de compte ?{' '}
-                <Text
-                    style={styles.link}
-                    onPress={() => router.push('/auth/register')}
-                >
-                    S’inscrire
-                </Text>
-                </Text>
             </View>
             
         </ScrollView>
@@ -116,6 +89,7 @@ const styles = StyleSheet.create({
     },
 
     textInput: {
+        paddingLeft: 15,
         flex: 1,
         height: '100%',
         fontSize: 14,
@@ -178,15 +152,5 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
 
-    bottomText: {
-        textAlign: 'center',
-        marginTop: 28,
-        color: '#666',
-        fontSize: 15,
-    },
 
-    link: {
-        color: '#2525F2',
-        fontWeight: '700',
-    },
 });

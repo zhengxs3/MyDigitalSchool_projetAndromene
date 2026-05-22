@@ -1,8 +1,25 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
+    const handleLogin = () => {
+        if (Platform.OS === 'web') {
+            window.alert('Votre compte a été créé avec succès !');
+            router.push('/(app)/choixsalle');
+        } else {
+            Alert.alert(
+            'Succès',
+            'Votre compte a été créé avec succès !',
+            [
+                {
+                text: 'OK',
+                onPress: () => router.push('/(app)/choixsalle'),
+                },
+            ]
+            );
+        }
+      };
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={80}>
         <ScrollView
@@ -53,7 +70,7 @@ export default function LoginScreen() {
                     />
                 </View>
 
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Se connecter</Text>
                 </TouchableOpacity>
 
