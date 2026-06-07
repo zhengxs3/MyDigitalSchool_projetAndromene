@@ -1,0 +1,77 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Test\TestCase\Model\Table;
+
+use App\Model\Table\DecisionsTable;
+use Cake\TestSuite\TestCase;
+
+/**
+ * App\Model\Table\DecisionsTable Test Case
+ */
+class DecisionsTableTest extends TestCase
+{
+    /**
+     * Test subject
+     *
+     * @var \App\Model\Table\DecisionsTable
+     */
+    protected $Decisions;
+
+    /**
+     * Fixtures
+     *
+     * @var array<string>
+     */
+    protected array $fixtures = [
+        'app.Decisions',
+        'app.Briefings',
+        'app.PlayerDecisions',
+    ];
+
+    /**
+     * setUp method
+     *
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $config = $this->getTableLocator()->exists('Decisions') ? [] : ['className' => DecisionsTable::class];
+        $this->Decisions = $this->getTableLocator()->get('Decisions', $config);
+    }
+
+    /**
+     * tearDown method
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        unset($this->Decisions);
+
+        parent::tearDown();
+    }
+
+    /**
+     * Test validationDefault method
+     *
+     * @return void
+     * @link \App\Model\Table\DecisionsTable::validationDefault()
+     */
+    public function testValidationDefault(): void
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test buildRules method
+     *
+     * @return void
+     * @link \App\Model\Table\DecisionsTable::buildRules()
+     */
+    public function testBuildRules(): void
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+}
