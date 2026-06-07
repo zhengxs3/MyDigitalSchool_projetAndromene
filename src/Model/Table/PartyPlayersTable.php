@@ -77,28 +77,23 @@ class PartyPlayersTable extends Table
         $validator
             ->scalar('role')
             ->maxLength('role', 50)
-            ->requirePresence('role', 'create')
-            ->notEmptyString('role');
+            ->allowEmptyString('role');
+
 
         $validator
-            ->scalar('objective')
-            ->requirePresence('objective', 'create')
-            ->notEmptyString('objective');
+        ->scalar('objective')
+        ->allowEmptyString('objective');
 
         $validator
-            ->integer('resources')
-            ->requirePresence('resources', 'create')
-            ->notEmptyString('resources');
+            ->allowEmptyString('resources');
 
         $validator
             ->integer('score')
-            ->requirePresence('score', 'create')
             ->notEmptyString('score');
 
         $validator
             ->scalar('status')
             ->maxLength('status', 30)
-            ->requirePresence('status', 'create')
             ->notEmptyString('status');
 
         return $validator;

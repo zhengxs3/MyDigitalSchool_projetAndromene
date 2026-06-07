@@ -62,6 +62,23 @@ return function (RouteBuilder $routes): void {
          */
         $builder->connect('/pages/*', 'Pages::display');
 
+
+        $builder->connect(
+            '/rooms/waiting-room/:id',
+            ['controller' => 'Rooms', 'action' => 'waitingRoom'],
+            ['pass' => ['id']]
+        );
+
+        $builder->connect(
+            '/rooms/join-by-code',
+            ['controller' => 'Rooms', 'action' => 'joinByCode']
+        );
+
+        $builder->connect(
+            '/rooms/ready-player',
+            ['controller' => 'Rooms', 'action' => 'readyPlayer']
+        );
+
         /*
          * Connect catchall routes for all controllers.
          *
