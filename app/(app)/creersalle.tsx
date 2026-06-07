@@ -1,156 +1,246 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 export default function CreerSalleScreen() {
-    const handleSalle = () => {
-        if (Platform.OS === 'web') {
-            window.alert('Votre compte a été créé avec succès !');
-            router.push('/(app)/nbjoueur');
-        } else {
-            Alert.alert(
-            'Succès',
-            'Votre compte a été créé avec succès !',
-            [
-                {
-                text: 'OK',
-                onPress: () => router.push('/(app)/nbjoueur'),
-                },
-            ]
-            );
+  const [roomName, setRoomName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const showMessage = (
+    title: string,
+    message: string
+  ) => {
+    if (Platform.OS === 'web') {
+      window.alert(message);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
+  const handleSalle = async () => {
+    if (!roomName.trim()) {
+      showMessage(
+        'Erreur',
+        'Veuillez entrer le nom de la salle.'
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // 获取用户
+      const userString =
+        await AsyncStorage.getItem('user');
+
+      if (!userString) {
+        showMessage(
+          'Erreur',
+          'Utilisateur non connecté.'
+        );
+        return;
+      }
+
+      const user = JSON.parse(userString);
+
+      console.log('USER = ', user);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BACKEND_URI}/rooms/add`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: roomName.trim(),
+            created_by: user.id,
+          }),
         }
-      };
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showMessage(
+          'Erreur',
+          data.message || 'Erreur lors de la création.'
+        );
+        return;
+      }
+
+      router.push({
+        pathname: '/(app)/nbjoueur',
+        params: {
+          roomId: data.room.id,
+        },
+      });
+    } catch (error) {
+      console.log('ERROR = ', error);
+    console.log('BACKEND = ', process.env.EXPO_PUBLIC_BACKEND_URI);
+
+      showMessage(
+        'Erreur',
+        'Impossible de se connecter au serveur.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={80}>
-        <ScrollView
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={
+        Platform.OS === 'ios'
+          ? 'padding'
+          : 'height'
+      }
+      keyboardVerticalOffset={80}
+    >
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
-        >
-            <View style={styles.logoArea}>
-                <Image
-                source={require('@/assets/images/logo3.png')}
-                style={styles.logo}
-                contentFit="contain"
-                />
-            </View>
+      >
+        <View style={styles.logoArea}>
+          <Image
+            source={require('@/assets/images/logo3.png')}
+            style={styles.logo}
+            contentFit="contain"
+          />
+        </View>
 
-            <View style={styles.card}>
-                <Text style={styles.title}>Nom de la salle</Text>
+        <View style={styles.card}>
+          <Text style={styles.title}>
+            Nom de la salle
+          </Text>
 
-                <Text style={styles.label}>Nom</Text>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="••••••"
-                        placeholderTextColor="#6B7280"
-                        secureTextEntry
-                    />
-                </View>
+          <Text style={styles.label}>Nom</Text>
 
-                <TouchableOpacity style={styles.button} onPress={handleSalle}>
-                <Text style={styles.buttonText}>Entrer</Text>
-                </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Nom de la salle"
+              placeholderTextColor="#6B7280"
+              value={roomName}
+              onChangeText={setRoomName}
+            />
+          </View>
 
-            </View>
-            
-        </ScrollView>
-            
+          <TouchableOpacity
+            style={[
+              styles.button,
+              loading && styles.buttonDisabled,
+            ]}
+            onPress={handleSalle}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading
+                ? 'Création...'
+                : 'Entrer'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-    inputContainer: {
-        width: '100%',
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#D8D4E8',
-        borderRadius: 6,
-        backgroundColor: '#FBF9FF',
+  inputContainer: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#D8D4E8',
+    borderRadius: 6,
+    backgroundColor: '#FBF9FF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginBottom: 18,
+  },
 
-        flexDirection: 'row',
-        alignItems: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 40,
+  },
 
-        paddingHorizontal: 10,
-        marginBottom: 18,
-    },
+  textInput: {
+    paddingLeft: 15,
+    flex: 1,
+    height: '100%',
+    fontSize: 14,
+  },
 
-    inputIcon: {
-        width: 18,
-        height: 18,
-        marginRight: 10,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
 
-    scrollContent: {
-        flexGrow: 1,
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 40,
-    },
+  logoArea: {
+    alignItems: 'center',
+    marginBottom: 90,
+  },
 
-    textInput: {
-        paddingLeft: 15,
-        flex: 1,
-        height: '100%',
-        fontSize: 14,
-    },
+  logo: {
+    width: 260,
+    height: 80,
+  },
 
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        
-    },
+  card: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+  },
 
-    logoArea: {
-        alignItems: 'center',
-        marginBottom: 90,
-    },
+  title: {
+    fontSize: 29,
+    fontWeight: '800',
+    color: '#0B00C7',
+    marginBottom: 30,
+  },
 
-    logo: {
-        width: 260,
-        height: 80,
-    },
+  label: {
+    fontSize: 13,
+    color: '#151936',
+    marginBottom: 6,
+    fontWeight: '600',
+  },
 
-    card: {
-        width: '100%',
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOpacity: 0.08,
-        shadowRadius: 15,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 4,
-    },
+  button: {
+    width: '100%',
+    height: 42,
+    backgroundColor: '#2525F2',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
 
-    title: {
-        fontSize: 29,
-        fontWeight: '800',
-        color: '#0B00C7',
-        marginBottom: 30,
-    },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
 
-    label: {
-        fontSize: 13,
-        color: '#151936',
-        marginBottom: 6,
-        fontWeight: '600',
-    },
-
-    button: {
-        width: '100%',
-        height: 42,
-        backgroundColor: '#2525F2',
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 4,
-    },
-
-    buttonText: {
-        color: '#fff',
-        fontWeight: '700',
-    },
-
-
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
 });

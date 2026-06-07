@@ -2,7 +2,6 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,18 +14,55 @@ import {
 
 export default function RegisterScreen() {
   const [accepted, setAccepted] = useState(false);
+  const [pseudo, setPseudo] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleRegister = () => {
-    Alert.alert(
-      'Succès',
-      'Votre compte a été créé avec succès !',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.push('/auth/login'),
-        },
-      ]
-    );
+  const handleRegister = async () => {
+    if (!pseudo || !email || !password) {
+      window.alert('Veuillez remplir tous les champs.');
+      return;
+    }
+
+    if (!accepted) {
+      window.alert("Vous devez accepter les conditions d'utilisation.");
+      return;
+    }
+
+    const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URI}/users/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        pseudo,
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      window.alert('Votre compte a été créé avec succès !');
+      router.push('/auth/login');
+    } else {
+      let message = data.message || 'Erreur inscription';
+
+      if (data.errors?.email) {
+        message = 'Cet email est déjà utilisé, veuillez en choisir un autre.';
+      }
+
+      if (data.errors?.pseudo) {
+        message = 'Ce pseudo est déjà utilisé.';
+      }
+    
+      window.alert(message);
+    }
+
+    // router.push('/auth/login');
+
   };
 
   return (
@@ -66,6 +102,8 @@ export default function RegisterScreen() {
               style={styles.textInput}
               placeholder="Votre pseudonyme"
               placeholderTextColor="#6B7280"
+              value={pseudo}
+              onChangeText={setPseudo}
             />
           </View>
 
@@ -80,6 +118,8 @@ export default function RegisterScreen() {
               style={styles.textInput}
               placeholder="nom@entreprise.fr"
               placeholderTextColor="#6B7280"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -95,6 +135,8 @@ export default function RegisterScreen() {
               placeholder="••••••••"
               placeholderTextColor="#6B7280"
               secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
 

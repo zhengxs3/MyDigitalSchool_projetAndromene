@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
@@ -12,23 +12,72 @@ import {
 } from 'react-native';
 
 export default function NbJoueur() {
-  const [selected, setSelected] = useState(1);
+  const { roomId } = useLocalSearchParams();
+  const [selected, setSelected] = useState(3);
+  const [loading, setLoading] = useState(false);
 
-  const handleNb = () => {
+  const showMessage = (
+    title: string,
+    message: string,
+    onPress?: () => void
+  ) => {
     if (Platform.OS === 'web') {
-        window.alert('Votre compte a été créé avec succès !');
-        router.push('/(app)/nbjoueur1');
+      window.alert(message);
+      onPress?.();
     } else {
-        Alert.alert(
-        'Succès',
-        'Votre compte a été créé avec succès !',
-        [
-            {
-            text: 'OK',
-            onPress: () => router.push('/(app)/nbjoueur1'),
-            },
-        ]
-        );
+      Alert.alert(title, message, [
+        {
+          text: 'OK',
+          onPress,
+        },
+      ]);
+    }
+  };
+
+  const handleNb = async () => {
+    if (!roomId) {
+      showMessage('Erreur', 'Salle introuvable.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BACKEND_URI}/rooms/update-players/${roomId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            max_players: selected,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showMessage('Erreur', data.message || 'Erreur lors de la mise à jour.');
+        return;
+      }
+
+      showMessage('Succès', 'Salle créée avec succès.', () => {
+        router.push({
+          pathname: '/(app)/attendre',
+          params: {
+            roomId,
+            partyId: data.party.id,
+          },
+        });
+      });
+    } catch (error) {
+      console.log(error);
+      showMessage('Erreur', 'Impossible de se connecter au serveur.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,14 +91,11 @@ export default function NbJoueur() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-
-        {/* CARD */}
         <View style={styles.card}>
           <Text style={styles.title}>Nombre de joueurs</Text>
 
-          {/* GRID */}
           <View style={styles.playersGrid}>
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+            {[3, 4, 5, 6, 7, 8].map((num) => (
               <TouchableOpacity
                 key={num}
                 style={[
@@ -71,9 +117,14 @@ export default function NbJoueur() {
           </View>
         </View>
 
-        {/* BUTTON */}
-        <TouchableOpacity style={styles.button} onPress={handleNb}>
-          <Text style={styles.buttonText}>Entrer</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleNb}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? 'Validation...' : 'Entrer'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -106,25 +157,22 @@ const styles = StyleSheet.create({
   },
 
   playersGrid: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  width: 200,
-  alignSelf: 'center',
-  justifyContent: 'space-between',
-},
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: 200,
+    alignSelf: 'center',
+    justifyContent: 'space-between',
+  },
 
   playerBox: {
-  width: 90,
-  height: 90,
-
-  backgroundColor: '#DBD8E7',
-  borderRadius: 10,
-
-  justifyContent: 'center',
-  alignItems: 'center',
-
-  marginBottom: 12,
-},
+    width: 90,
+    height: 90,
+    backgroundColor: '#DBD8E7',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
 
   playerBoxSelected: {
     backgroundColor: '#2525F2',
@@ -145,12 +193,14 @@ const styles = StyleSheet.create({
     height: 46,
     backgroundColor: '#2525F2',
     borderRadius: 10,
-
     justifyContent: 'center',
     alignItems: 'center',
-
     marginTop: 28,
     alignSelf: 'center',
+  },
+
+  buttonDisabled: {
+    opacity: 0.6,
   },
 
   buttonText: {
