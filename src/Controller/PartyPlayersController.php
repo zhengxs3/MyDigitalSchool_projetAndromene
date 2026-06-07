@@ -10,11 +10,7 @@ namespace App\Controller;
  */
 class PartyPlayersController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
+    
     public function index()
     {
         $query = $this->PartyPlayers->find()
@@ -24,24 +20,12 @@ class PartyPlayersController extends AppController
         $this->set(compact('partyPlayers'));
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Party Player id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function view($id = null)
     {
         $partyPlayer = $this->PartyPlayers->get($id, contain: ['Users', 'Parties']);
         $this->set(compact('partyPlayer'));
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
     public function add()
     {
         $partyPlayer = $this->PartyPlayers->newEmptyEntity();
@@ -59,13 +43,6 @@ class PartyPlayersController extends AppController
         $this->set(compact('partyPlayer', 'users', 'parties'));
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Party Player id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function edit($id = null)
     {
         $partyPlayer = $this->PartyPlayers->get($id, contain: []);
@@ -83,13 +60,59 @@ class PartyPlayersController extends AppController
         $this->set(compact('partyPlayer', 'users', 'parties'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Party Player id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
+public function updateRole()
+{
+    $this->request->allowMethod(['patch', 'post', 'put']);
+    $this->viewBuilder()->setClassName('Json');
+
+    $data = $this->request->getData();
+
+    $partyId = $data['party_id'] ?? null;
+    $userId = $data['user_id'] ?? null;
+    $role = $data['role'] ?? null;
+
+    if (!$partyId || !$userId || !$role) {
+        $this->set([
+            'success' => false,
+            'message' => 'Données manquantes',
+        ]);
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+        return;
+    }
+
+    $partyPlayer = $this->PartyPlayers->find()
+        ->where([
+            'party_id' => $partyId,
+            'user_id' => $userId,
+        ])
+        ->first();
+
+    if (!$partyPlayer) {
+        $this->set([
+            'success' => false,
+            'message' => 'Joueur introuvable',
+        ]);
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+        return;
+    }
+
+    $partyPlayer->role = $role;
+
+    if ($this->PartyPlayers->save($partyPlayer)) {
+        $this->set([
+            'success' => true,
+            'message' => 'Rôle enregistré',
+            'role' => $role,
+        ]);
+    } else {
+        $this->set([
+            'success' => false,
+            'message' => 'Erreur sauvegarde',
+        ]);
+    }
+
+    $this->viewBuilder()->setOption('serialize', ['success', 'message', 'role']);
+}
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);

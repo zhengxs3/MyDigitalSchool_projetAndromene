@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 namespace App\Controller;
+use Cake\Cache\Cache;
 
 /**
  * Rooms Controller
@@ -10,11 +11,7 @@ namespace App\Controller;
  */
 class RoomsController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
+
     public function index()
     {
         $query = $this->Rooms->find();
@@ -23,13 +20,6 @@ class RoomsController extends AppController
         $this->set(compact('rooms'));
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Room id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function view($id = null)
     {
         $room = $this->Rooms->get($id, contain: ['Parties']);
@@ -216,6 +206,17 @@ class RoomsController extends AppController
             ->where(['room_id' => $room->id])
             ->first();
 
+        if (!$party) {
+            return $this->response
+                ->withType('application/json')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withStatus(404)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => 'Partie introuvable.',
+                ]));
+        }
+
         $partyPlayersTable = $this->fetchTable('PartyPlayers');
 
         $players = $partyPlayersTable
@@ -238,6 +239,13 @@ class RoomsController extends AppController
             ];
         }
 
+        $messages = Cache::read('party_messages_' . $party->id, 'default') ?? [];
+
+        $started = Cache::read(
+            'party_started_' . $party->id,
+            'default'
+        ) ?? false;
+
         return $this->response
             ->withType('application/json')
             ->withHeader('Access-Control-Allow-Origin', '*')
@@ -256,10 +264,74 @@ class RoomsController extends AppController
                     'status' => $party->status,
                 ],
                 'players' => $playersData,
+                'messages' => $messages,
+                'started' => $started,
             ]));
     }
 
-    
+    public function sendMessage()
+    {
+        $this->request->allowMethod(['post']);
+
+        $data = $this->request->getData();
+
+        $partyId = $data['party_id'] ?? null;
+        $userId = $data['user_id'] ?? null;
+        $name = $data['name'] ?? 'Joueur';
+        $content = trim($data['content'] ?? '');
+
+        if (!$partyId || !$userId || $content === '') {
+            return $this->response
+                ->withType('application/json')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withStatus(400)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => 'Données invalides.',
+                ]));
+        }
+
+        $partiesTable = $this->fetchTable('Parties');
+
+        $party = $partiesTable
+            ->find()
+            ->where(['id' => $partyId])
+            ->first();
+
+        if (!$party) {
+            return $this->response
+                ->withType('application/json')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withStatus(404)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => 'Partie introuvable.',
+                ]));
+        }
+
+        $cacheKey = 'party_messages_' . $partyId;
+
+        $messages = Cache::read($cacheKey, 'default') ?? [];
+
+        $messages[] = [
+            'id' => time() . rand(100, 999),
+            'user_id' => $userId,
+            'name' => $name,
+            'content' => $content,
+            'created' => date('Y-m-d H:i:s'),
+        ];
+
+        Cache::write($cacheKey, $messages, 'default');
+
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withStatus(200)
+            ->withStringBody(json_encode([
+                'success' => true,
+                'messages' => $messages,
+            ]));
+    }
 
     public function joinByCode()
     {
@@ -505,16 +577,43 @@ class RoomsController extends AppController
             ]));
     }
 
+    public function startGame()
+    {
+        $this->request->allowMethod(['post']);
+
+        $data = $this->request->getData();
+
+        $partyId = $data['party_id'] ?? null;
+
+        if (!$partyId) {
+            return $this->response
+                ->withType('application/json')
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withStatus(400)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => 'party_id obligatoire.',
+                ]));
+        }
+
+        Cache::write(
+            'party_started_' . $partyId,
+            true,
+            'default'
+        );
+
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withStatus(200)
+            ->withStringBody(json_encode([
+                'success' => true,
+            ]));
+    }
 
 
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Room id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
+
     public function edit($id = null)
     {
         $room = $this->Rooms->get($id, contain: []);
@@ -530,13 +629,6 @@ class RoomsController extends AppController
         $this->set(compact('room'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Room id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);

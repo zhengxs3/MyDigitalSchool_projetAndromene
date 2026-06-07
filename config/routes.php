@@ -79,6 +79,11 @@ return function (RouteBuilder $routes): void {
             ['controller' => 'Rooms', 'action' => 'readyPlayer']
         );
 
+        $builder->connect(
+            '/party-players/update-role',
+            ['controller' => 'PartyPlayers', 'action' => 'updateRole']
+        );
+
         /*
          * Connect catchall routes for all controllers.
          *
