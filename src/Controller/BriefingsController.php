@@ -10,11 +10,27 @@ namespace App\Controller;
  */
 class BriefingsController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
+    
+    public function random()
+    {
+        $this->request->allowMethod(['get']);
+
+        $briefing = $this->Briefings
+            ->find()
+            ->order('RAND()')
+            ->first();
+
+        $this->response = $this->response
+            ->withType('application/json')
+            ->withStringBody(json_encode([
+                'success' => true,
+                'briefing' => $briefing
+            ]));
+
+        return $this->response;
+    }
+
+
     public function index()
     {
         $query = $this->Briefings->find();
@@ -23,24 +39,12 @@ class BriefingsController extends AppController
         $this->set(compact('briefings'));
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Briefing id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function view($id = null)
     {
         $briefing = $this->Briefings->get($id, contain: ['Decisions', 'Parties']);
         $this->set(compact('briefing'));
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
     public function add()
     {
         $briefing = $this->Briefings->newEmptyEntity();
@@ -56,13 +60,6 @@ class BriefingsController extends AppController
         $this->set(compact('briefing'));
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Briefing id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function edit($id = null)
     {
         $briefing = $this->Briefings->get($id, contain: []);
@@ -78,13 +75,6 @@ class BriefingsController extends AppController
         $this->set(compact('briefing'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Briefing id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);

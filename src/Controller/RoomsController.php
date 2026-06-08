@@ -233,6 +233,7 @@ class RoomsController extends AppController
                 'user_id' => $player->user_id,
                 'name' => $player->user->pseudo ?? 'Joueur',
                 'role' => $player->role,
+                'resources' => $player->resources,
                 'status' => $player->status,
                 'isMe' => (int)$player->user_id === (int)$userId,
                 'isHost' => (int)$player->user_id === (int)$room->created_by,

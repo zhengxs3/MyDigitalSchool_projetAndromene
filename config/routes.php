@@ -84,6 +84,18 @@ return function (RouteBuilder $routes): void {
             ['controller' => 'PartyPlayers', 'action' => 'updateRole']
         );
 
+       $builder->connect(
+            '/parties/{partyId}/briefing',
+            ['controller' => 'Parties', 'action' => 'briefing'],
+            ['pass' => ['partyId']]
+        );
+
+        
+        $builder->connect(
+            '/briefings/random',
+            ['controller' => 'Briefings', 'action' => 'random']
+        );
+
         /*
          * Connect catchall routes for all controllers.
          *

@@ -10,11 +10,75 @@ namespace App\Controller;
  */
 class PartiesController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
+
+    public function briefing($partyId = null)
+    {
+        $this->request->allowMethod(['get']);
+
+        try {
+            $party = $this->Parties
+                ->find()
+                ->where(['Parties.id' => $partyId])
+                ->first();
+
+            if (!$party) {
+                return $this->response
+                    ->withType('application/json')
+                    ->withStatus(404)
+                    ->withStringBody(json_encode([
+                        'success' => false,
+                        'message' => 'Party introuvable'
+                    ]));
+            }
+
+            $briefingsTable = $this->fetchTable('Briefings');
+
+            if (!empty($party->briefing_id)) {
+                $briefing = $briefingsTable
+                    ->find()
+                    ->where(['Briefings.id' => $party->briefing_id])
+                    ->first();
+            } else {
+                $briefings = $briefingsTable
+                    ->find()
+                    ->all()
+                    ->toList();
+
+                if (empty($briefings)) {
+                    return $this->response
+                        ->withType('application/json')
+                        ->withStatus(404)
+                        ->withStringBody(json_encode([
+                            'success' => false,
+                            'message' => 'Aucun briefing disponible'
+                        ]));
+                }
+
+                $briefing = $briefings[array_rand($briefings)];
+
+                $party->briefing_id = $briefing->id;
+                $this->Parties->save($party);
+            }
+
+            return $this->response
+                ->withType('application/json')
+                ->withStringBody(json_encode([
+                    'success' => true,
+                    'briefing' => $briefing
+                ]));
+
+        } catch (\Throwable $e) {
+            return $this->response
+                ->withType('application/json')
+                ->withStatus(500)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ]));
+        }
+    }
+
+    
     public function index()
     {
         $query = $this->Parties->find()
@@ -24,24 +88,12 @@ class PartiesController extends AppController
         $this->set(compact('parties'));
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Party id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function view($id = null)
     {
         $party = $this->Parties->get($id, contain: ['Briefings', 'Rooms', 'PartyPlayers', 'PlayerDecisions']);
         $this->set(compact('party'));
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
     public function add()
     {
         $party = $this->Parties->newEmptyEntity();
@@ -59,13 +111,6 @@ class PartiesController extends AppController
         $this->set(compact('party', 'briefings', 'rooms'));
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Party id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function edit($id = null)
     {
         $party = $this->Parties->get($id, contain: []);
@@ -83,13 +128,6 @@ class PartiesController extends AppController
         $this->set(compact('party', 'briefings', 'rooms'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Party id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
