@@ -579,38 +579,63 @@ class RoomsController extends AppController
     }
 
     public function startGame()
-    {
-        $this->request->allowMethod(['post']);
+{
+    $this->request->allowMethod(['post']);
 
-        $data = $this->request->getData();
+    $data = $this->request->getData();
+    $partyId = $data['party_id'] ?? null;
 
-        $partyId = $data['party_id'] ?? null;
-
-        if (!$partyId) {
-            return $this->response
-                ->withType('application/json')
-                ->withHeader('Access-Control-Allow-Origin', '*')
-                ->withStatus(400)
-                ->withStringBody(json_encode([
-                    'success' => false,
-                    'message' => 'party_id obligatoire.',
-                ]));
-        }
-
-        Cache::write(
-            'party_started_' . $partyId,
-            true,
-            'default'
-        );
-
+    if (!$partyId) {
         return $this->response
             ->withType('application/json')
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withStatus(200)
+            ->withStatus(400)
             ->withStringBody(json_encode([
-                'success' => true,
+                'success' => false,
+                'message' => 'party_id obligatoire.',
             ]));
     }
+
+    $partiesTable = $this->fetchTable('Parties');
+
+    $party = $partiesTable
+        ->find()
+        ->where(['id' => $partyId])
+        ->first();
+
+    if (!$party) {
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withStatus(404)
+            ->withStringBody(json_encode([
+                'success' => false,
+                'message' => 'Partie introuvable.',
+            ]));
+    }
+
+    $room = $this->Rooms->get($party->room_id);
+
+    $party->status = 'playing';
+    $room->status = 'playing';
+
+    $partiesTable->save($party);
+    $this->Rooms->save($room);
+
+    Cache::write(
+        'party_started_' . $partyId,
+        true,
+        'default'
+    );
+
+    return $this->response
+        ->withType('application/json')
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withStatus(200)
+        ->withStringBody(json_encode([
+            'success' => true,
+        ]));
+}
 
 
 
