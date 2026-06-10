@@ -10,11 +10,66 @@ namespace App\Controller;
  */
 class PlayerDecisionsController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
+
+public function ranking($partyId = null)
+{
+    $this->request->allowMethod(['get']);
+
+    $partyPlayersTable = $this->fetchTable('PartyPlayers');
+
+    $players = $partyPlayersTable
+        ->find()
+        ->contain(['Users'])
+        ->where([
+            'PartyPlayers.party_id' => (int)$partyId
+        ])
+        ->all()
+        ->toArray();
+
+    $result = [];
+
+    foreach ($players as $player) {
+        $totalScoreRow = $this->PlayerDecisions
+            ->find()
+            ->select([
+                'total_score' => $this->PlayerDecisions->find()->func()->sum('score')
+            ])
+            ->where([
+                'party_id' => (int)$partyId,
+                'user_id' => (int)$player->user_id,
+            ])
+            ->first();
+
+        $totalScore = $totalScoreRow->total_score ?? 0;
+
+        $result[] = [
+            'id' => $player->id,
+            'user_id' => $player->user_id,
+            'pseudo' => $player->user->pseudo ?? 'Joueur',
+            'role' => $player->role,
+            'score' => (int)$totalScore,
+        ];
+    }
+
+    usort($result, function ($a, $b) {
+        return $b['score'] <=> $a['score'];
+    });
+
+    foreach ($result as $index => &$player) {
+        $player['rank'] = $index + 1;
+    }
+
+    return $this->response
+        ->withType('application/json')
+        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+        ->withStatus(200)
+        ->withStringBody(json_encode([
+            'success' => true,
+            'players' => $result,
+        ]));
+}
+
+
     public function index()
     {
         $query = $this->PlayerDecisions->find()
@@ -24,24 +79,12 @@ class PlayerDecisionsController extends AppController
         $this->set(compact('playerDecisions'));
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Player Decision id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function view($id = null)
     {
         $playerDecision = $this->PlayerDecisions->get($id, contain: ['Users', 'Decisions', 'Parties']);
         $this->set(compact('playerDecision'));
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
     public function add()
     {
         $playerDecision = $this->PlayerDecisions->newEmptyEntity();
@@ -60,13 +103,6 @@ class PlayerDecisionsController extends AppController
         $this->set(compact('playerDecision', 'users', 'decisions', 'parties'));
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Player Decision id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function edit($id = null)
     {
         $playerDecision = $this->PlayerDecisions->get($id, contain: []);
@@ -85,13 +121,6 @@ class PlayerDecisionsController extends AppController
         $this->set(compact('playerDecision', 'users', 'decisions', 'parties'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Player Decision id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);

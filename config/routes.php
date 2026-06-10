@@ -96,6 +96,23 @@ return function (RouteBuilder $routes): void {
             ['controller' => 'Briefings', 'action' => 'random']
         );
 
+        $builder->connect(
+            '/decisions/by-party/:partyId',
+            ['controller' => 'Decisions', 'action' => 'byParty'],
+            ['pass' => ['partyId']]
+        );
+
+        $builder->connect(
+            '/decisions/choose',
+            ['controller' => 'Decisions', 'action' => 'choose']
+        );
+
+        $builder->connect(
+            '/player-decisions/ranking/:partyId',
+            ['controller' => 'PlayerDecisions', 'action' => 'ranking'],
+            ['pass' => ['partyId']]
+        );
+
         /*
          * Connect catchall routes for all controllers.
          *

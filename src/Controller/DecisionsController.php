@@ -63,57 +63,74 @@ public function choose()
 
     $data = $this->request->getData();
 
-    $userId = $data['user_id'];
-    $partyId = $data['party_id'];
-    $decisionId = $data['decision_id'];
+    $partyId = $data['party_id'] ?? null;
+    $decisionId = $data['decision_id'] ?? null;
 
-    $playerDecisionsTable = $this->fetchTable('PlayerDecisions');
+    if (!$partyId || !$decisionId) {
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+            ->withStatus(400)
+            ->withStringBody(json_encode([
+                'success' => false,
+                'message' => 'party_id ou decision_id manquant',
+                'data' => $data,
+            ]));
+    }
+
     $partyPlayersTable = $this->fetchTable('PartyPlayers');
+    $playerDecisionsTable = $this->fetchTable('PlayerDecisions');
 
-    // decision
-    $decision = $this->Decisions->get($decisionId);
+    $decision = $this->Decisions
+        ->find()
+        ->where(['id' => (int)$decisionId])
+        ->first();
 
-    // player
+    if (!$decision) {
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+            ->withStatus(404)
+            ->withStringBody(json_encode([
+                'success' => false,
+                'message' => 'Décision introuvable',
+            ]));
+    }
+
     $player = $partyPlayersTable
         ->find()
-        ->where([
-            'user_id' => $userId,
-            'party_id' => $partyId,
-        ])
+        ->where(['party_id' => (int)$partyId])
         ->first();
 
     if (!$player) {
         return $this->response
             ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
             ->withStatus(404)
             ->withStringBody(json_encode([
                 'success' => false,
-                'message' => 'Player introuvable',
+                'message' => 'Joueur introuvable',
             ]));
     }
 
-    $resources = json_decode($player->resources, true);
-
-    // argent insuffisant
-    if (
-        $resources['argent'] < $decision->resources_used
-    ) {
-        return $this->response
-            ->withType('application/json')
-            ->withStatus(400)
-            ->withStringBody(json_encode([
-                'success' => false,
-                'message' => 'Ressources insuffisantes',
-            ]));
+    if (is_array($player->resources)) {
+        $resources = $player->resources;
+    } else {
+        $resources = json_decode((string)($player->resources ?? '{}'), true);
     }
 
-    // 检查同 type 是否已经选过
+    if (!is_array($resources)) {
+        $resources = [];
+    }
+
     $alreadySelected = $playerDecisionsTable
         ->find()
-        ->contain(['Decisions'])
+        ->innerJoin(
+            ['Decisions' => 'decisions'],
+            ['Decisions.id = PlayerDecisions.decision_id']
+        )
         ->where([
-            'PlayerDecisions.user_id' => $userId,
-            'PlayerDecisions.party_id' => $partyId,
+            'PlayerDecisions.party_id' => (int)$partyId,
             'Decisions.type' => $decision->type,
         ])
         ->first();
@@ -121,40 +138,63 @@ public function choose()
     if ($alreadySelected) {
         return $this->response
             ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
             ->withStatus(400)
             ->withStringBody(json_encode([
                 'success' => false,
-                'message' => 'Type déjà sélectionné',
+                'message' => 'Une décision de ce type est déjà choisie',
             ]));
     }
 
-    // 扣钱
-    $resources['argent'] -= $decision->resources_used;
+    // 不扣钱，只加分
+    $player->score = (int)($player->score ?? 0) + (int)$decision->score;
 
-    $player->resources = json_encode($resources);
+    if (!$partyPlayersTable->save($player)) {
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+            ->withStatus(400)
+            ->withStringBody(json_encode([
+                'success' => false,
+                'message' => 'Erreur update player',
+                'errors' => $player->getErrors(),
+            ]));
+    }
 
-    // 加分
-    $player->score += $decision->score;
-
-    $partyPlayersTable->save($player);
-
-    // 保存选择记录
     $playerDecision = $playerDecisionsTable->newEmptyEntity();
 
-    $playerDecision->user_id = $userId;
-    $playerDecision->party_id = $partyId;
-    $playerDecision->decision_id = $decisionId;
-    $playerDecision->score = $decision->score;
+    $playerDecision->user_id = (int)$player->user_id;
+    $playerDecision->decision_id = (int)$decisionId;
+    $playerDecision->party_id = (int)$partyId;
+    $playerDecision->elapsed_time = 0;
+    $playerDecision->score = (int)$decision->score;
 
-    $playerDecisionsTable->save($playerDecision);
+    if (!$playerDecisionsTable->save($playerDecision)) {
+        return $this->response
+            ->withType('application/json')
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
+            ->withStatus(400)
+            ->withStringBody(json_encode([
+                'success' => false,
+                'message' => 'Erreur insert player_decisions',
+                'errors' => $playerDecision->getErrors(),
+            ]));
+    }
 
     return $this->response
         ->withType('application/json')
+        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8081')
         ->withStatus(200)
         ->withStringBody(json_encode([
             'success' => true,
+            'message' => 'Décision choisie',
+            'resources' => $resources,
+            'score' => $player->score,
+            'saved' => $playerDecision,
         ]));
 }
+
+
 
     public function index()
     {

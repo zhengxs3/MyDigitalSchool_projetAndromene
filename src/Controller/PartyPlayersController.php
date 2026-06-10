@@ -60,114 +60,113 @@ class PartyPlayersController extends AppController
         $this->set(compact('partyPlayer', 'users', 'parties'));
     }
 
-public function updateRole()
-{
-    $this->request->allowMethod(['patch', 'post', 'put']);
-    $this->viewBuilder()->setClassName('Json');
+    public function updateRole()
+    {
+        $this->request->allowMethod(['patch', 'post', 'put']);
+        $this->viewBuilder()->setClassName('Json');
 
-    $data = $this->request->getData();
+        $data = $this->request->getData();
 
-    $partyId = $data['party_id'] ?? null;
-    $userId = $data['user_id'] ?? null;
-    $role = $data['role'] ?? null;
+        $partyId = $data['party_id'] ?? null;
+        $userId = $data['user_id'] ?? null;
+        $role = $data['role'] ?? null;
 
-    if (!$partyId || !$userId || !$role) {
-        $this->set([
-            'success' => false,
-            'message' => 'Données manquantes',
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
-        return;
+        if (!$partyId || !$userId || !$role) {
+            $this->set([
+                'success' => false,
+                'message' => 'Données manquantes',
+            ]);
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $partyPlayer = $this->PartyPlayers->find()
+            ->where([
+                'party_id' => $partyId,
+                'user_id' => $userId,
+            ])
+            ->first();
+
+        if (!$partyPlayer) {
+            $this->set([
+                'success' => false,
+                'message' => 'Joueur introuvable',
+            ]);
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $partyPlayer->role = $role;
+
+        if ($this->PartyPlayers->save($partyPlayer)) {
+            $this->set([
+                'success' => true,
+                'message' => 'Rôle enregistré',
+                'role' => $role,
+            ]);
+        } else {
+            $this->set([
+                'success' => false,
+                'message' => 'Erreur sauvegarde',
+            ]);
+        }
+
+        $this->viewBuilder()->setOption('serialize', ['success', 'message', 'role']);
     }
 
-    $partyPlayer = $this->PartyPlayers->find()
-        ->where([
-            'party_id' => $partyId,
-            'user_id' => $userId,
-        ])
-        ->first();
+    public function updateRessources()
+    {
+        $this->request->allowMethod(['patch', 'post', 'put']);
+        $this->viewBuilder()->setClassName('Json');
 
-    if (!$partyPlayer) {
-        $this->set([
-            'success' => false,
-            'message' => 'Joueur introuvable',
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
-        return;
+        $data = $this->request->getData();
+
+        $partyId = $data['party_id'] ?? null;
+        $userId = $data['user_id'] ?? null;
+        $ressources = $data['ressources'] ?? null;
+
+        if (!$partyId || !$userId || !$ressources) {
+            $this->set([
+                'success' => false,
+                'message' => 'Données manquantes',
+            ]);
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $partyPlayer = $this->PartyPlayers->find()
+            ->where([
+                'party_id' => $partyId,
+                'user_id' => $userId,
+            ])
+            ->first();
+
+        if (!$partyPlayer) {
+            $this->set([
+                'success' => false,
+                'message' => 'Joueur introuvable',
+            ]);
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $partyPlayer->resources = $ressources;
+
+        if ($this->PartyPlayers->save($partyPlayer)) {
+            $this->set([
+                'success' => true,
+                'message' => 'Ressources enregistrées',
+                'resources' => $ressources,
+            ]);
+        } else {
+            $this->set([
+                'success' => false,
+                'message' => 'Erreur sauvegarde',
+            ]);
+        }
+
+        $this->viewBuilder()->setOption('serialize', ['success', 'message', 'resources']);
     }
-
-    $partyPlayer->role = $role;
-
-    if ($this->PartyPlayers->save($partyPlayer)) {
-        $this->set([
-            'success' => true,
-            'message' => 'Rôle enregistré',
-            'role' => $role,
-        ]);
-    } else {
-        $this->set([
-            'success' => false,
-            'message' => 'Erreur sauvegarde',
-        ]);
-    }
-
-    $this->viewBuilder()->setOption('serialize', ['success', 'message', 'role']);
-}
-
-public function updateRessources()
-{
-    $this->request->allowMethod(['patch', 'post', 'put']);
-    $this->viewBuilder()->setClassName('Json');
-
-    $data = $this->request->getData();
-
-    $partyId = $data['party_id'] ?? null;
-    $userId = $data['user_id'] ?? null;
-    $ressources = $data['ressources'] ?? null;
-
-    if (!$partyId || !$userId || !$ressources) {
-        $this->set([
-            'success' => false,
-            'message' => 'Données manquantes',
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
-        return;
-    }
-
-    $partyPlayer = $this->PartyPlayers->find()
-        ->where([
-            'party_id' => $partyId,
-            'user_id' => $userId,
-        ])
-        ->first();
-
-    if (!$partyPlayer) {
-        $this->set([
-            'success' => false,
-            'message' => 'Joueur introuvable',
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
-        return;
-    }
-
-    $partyPlayer->resources = $ressources;
-
-    if ($this->PartyPlayers->save($partyPlayer)) {
-        $this->set([
-            'success' => true,
-            'message' => 'Ressources enregistrées',
-            'resources' => $ressources,
-        ]);
-    } else {
-        $this->set([
-            'success' => false,
-            'message' => 'Erreur sauvegarde',
-        ]);
-    }
-
-    $this->viewBuilder()->setOption('serialize', ['success', 'message', 'resources']);
-}
-
 
 
     public function delete($id = null)
