@@ -5,21 +5,25 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function RejoindreSalleScreen() {
+  // Code de salle saisi par l'utilisateur
   const [code, setCode] = useState('');
+
+  // État indiquant si la connexion à la salle est en cours
   const [loading, setLoading] = useState(false);
 
+  // Affiche un message adapté à la plateforme utilisée.
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === 'web') {
       window.alert(message);
@@ -28,6 +32,7 @@ export default function RejoindreSalleScreen() {
     }
   };
 
+  // Permet de rejoindre une salle à partir du code saisi.
   const handleSalle = async () => {
     if (!code.trim()) {
       showMessage('Erreur', 'Veuillez entrer le code de la salle.');

@@ -15,14 +15,22 @@ import {
 } from "react-native";
 
 export default function Briefing() {
+  // Récupération des paramètres transmis par la navigation
   const { roomId, partyId } = useLocalSearchParams();
 
+  // Informations du briefing
   const [briefing, setBriefing] = useState<BriefingType | null>(null);
+
+  // État de chargement
   const [loading, setLoading] = useState(true);
+
+  // Temps restant avant la disparition du briefing
   const [secondsLeft, setSecondsLeft] = useState(15);
+
 
   const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URI;
 
+  // Charge les informations du briefing depuis l'API.
   const loadBriefing = async () => {
     try {
       if (!backendUrl) {
@@ -30,6 +38,7 @@ export default function Briefing() {
         return;
       }
 
+      // Récupération du briefing associé à la partie
       const briefingData = await getPartyBriefing(
         partyId,
         backendUrl
@@ -48,13 +57,16 @@ export default function Briefing() {
     }
   };
 
+  // Chargement initial du briefing lors de l'ouverture de l'écran.
   useEffect(() => {
     loadBriefing();
   }, []);
 
+  // Lorsque le temps est écoulé, l'utilisateur est redirigé vers l'écran des ressources.
   useEffect(() => {
     if (loading || !briefing) return;
 
+    // Fin du temps imparti
     if (secondsLeft <= 0) {
       router.replace({
         pathname: "/(app)/ressources",
@@ -66,6 +78,7 @@ export default function Briefing() {
       return;
     }
 
+    // Décrémentation du compteur toutes les secondes
     const timer = setTimeout(() => {
       setSecondsLeft((prev) => prev - 1);
     }, 1000);
@@ -73,6 +86,7 @@ export default function Briefing() {
     return () => clearTimeout(timer);
   }, [secondsLeft, loading, briefing]);
 
+  // Affichage de l'écran de chargement.
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -82,6 +96,7 @@ export default function Briefing() {
     );
   }
 
+  // Aucun briefing disponible.
   if (!briefing) {
     return (
       <View style={styles.loadingContainer}>
@@ -92,25 +107,31 @@ export default function Briefing() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* En-tête de l'application */}
       <View style={styles.header}>
         <Text style={styles.menu}>☰</Text>
         <Text style={styles.logo}>BestNegotiator</Text>
         <View style={styles.avatar} />
       </View>
 
+      {/* Catégorie du briefing */}
       <Text style={styles.kicker}>CEO BRIEFING</Text>
 
+      {/* Titre principal */}
       <Text style={styles.title}>Mission du CEO</Text>
 
+      {/* Description */}
       <Text style={styles.subtitle}>
         Le briefing disparaîtra automatiquement à la fin du compte à rebours.
       </Text>
 
+      {/* Compteur visuel */}
       <View style={styles.timerCircle}>
         <Text style={styles.timerNumber}>{secondsLeft}</Text>
         <Text style={styles.timerLabel}>secondes</Text>
       </View>
 
+      {/* Carte contenant les informations du briefing */}
       <View style={styles.card}>
         <Text style={styles.briefingTitle}>{briefing.title}</Text>
 
@@ -124,10 +145,10 @@ export default function Briefing() {
           <Text style={styles.infoText}>{briefing.objective}</Text>
         </View>
 
+        {/* Message d'avertissement */}
         <View style={styles.warningBlock}>
           <Text style={styles.warningText}>
-            Analysez vite. Après {briefing.time_limit} secondes, la mission sera
-            masquée.
+            Analysez vite. Après {briefing.time_limit} secondes, la mission sera masquée.
           </Text>
         </View>
       </View>

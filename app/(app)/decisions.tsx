@@ -1,13 +1,13 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type Decision = {
@@ -28,20 +28,35 @@ type Resources = {
 };
 
 export default function Decisions() {
+  // Identifiants de la partie et de la salle
   const { partyId, roomId } = useLocalSearchParams();
 
+  // Liste des décisions disponibles
   const [decisions, setDecisions] = useState<Decision[]>([]);
+
+  // Ressources disponibles du joueur
   const [resources, setResources] = useState<Resources>({ argent: 0 });
+
+  // Décisions sélectionnées par catégorie
   const [selectedByType, setSelectedByType] = useState<Record<string, Decision>>({});
+
+  // État de chargement
   const [loading, setLoading] = useState(true);
+  // Message affiché à l'utilisateur
   const [message, setMessage] = useState("");
+
+  // Temps restant avant validation automatique
   const [timeLeft, setTimeLeft] = useState(90);
+
+  // État indiquant si les choix ont été validés
   const [submitted, setSubmitted] = useState(false);
 
+  // Référence permettant d'éviter plusieurs validations
   const submittedRef = useRef(false);
 
   const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URI;
 
+  // Charge les décisions disponibles ainsi que les ressources du joueur.
   const loadDecisions = async () => {
     try {
       if (!backendUrl || !partyId) return;
@@ -72,6 +87,7 @@ export default function Decisions() {
     loadDecisions();
   }, []);
 
+  // Lorsque le temps atteint zéro, les choix sont validés automatiquement.
   useEffect(() => {
     if (loading || submitted) return;
 
@@ -87,6 +103,7 @@ export default function Decisions() {
     return () => clearTimeout(timer);
   }, [timeLeft, loading, submitted]);
 
+  // Regroupement des décisions par catégorie.
   const groupedDecisions = decisions.reduce<Record<string, Decision[]>>(
     (groups, decision) => {
       if (!groups[decision.type]) {
@@ -99,6 +116,7 @@ export default function Decisions() {
     {}
   );
 
+  // Vérifie si le joueur possède suffisamment de ressources.
   const handleSelect = (decision: Decision) => {
     if (submitted) return;
 
@@ -117,6 +135,7 @@ export default function Decisions() {
     setMessage("");
   };
 
+  // Validation finale des décisions sélectionnées.
   const handleSubmit = async () => {
     try {
       if (submittedRef.current) return;
@@ -231,12 +250,12 @@ export default function Decisions() {
                   </Text>
                 </View>
 
-                <View style={styles.infoRow}>
+                {/* <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Score</Text>
                   <Text style={styles.scoreValue}>
                     {decision.score > 0 ? `+${decision.score}` : decision.score}
                   </Text>
-                </View>
+                </View> */}
 
                 {!canAfford && (
                   <Text style={styles.notEnough}>Ressources insuffisantes</Text>

@@ -13,28 +13,41 @@ import {
 } from 'react-native';
 
 export default function RegisterScreen() {
+  // État indiquant si les conditions d'utilisation sont acceptées
   const [accepted, setAccepted] = useState(false);
+
+  // État permettant de stocker le pseudonyme saisi
   const [pseudo, setPseudo] = useState('');
+
+  // État permettant de stocker l'adresse e-mail saisie
   const [email, setEmail] = useState('');
+
+  // État permettant de stocker le mot de passe saisi
   const [password, setPassword] = useState('');
 
+  // Fonction permettant de créer un nouveau compte utilisateur
   const handleRegister = async () => {
+    // Vérification que tous les champs sont renseignés
     if (!pseudo || !email || !password) {
       window.alert('Veuillez remplir tous les champs.');
       return;
     }
 
+    // Vérification de l'acceptation des conditions générales
     if (!accepted) {
       window.alert("Vous devez accepter les conditions d'utilisation.");
       return;
     }
 
+    // Envoi des données d'inscription à l'API
     const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URI}/users/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+
+      // Données envoyées au serveur
       body: JSON.stringify({
         pseudo,
         email,
@@ -42,8 +55,10 @@ export default function RegisterScreen() {
       }),
     });
 
+    // Récupération de la réponse du serveur
     const data = await response.json();
 
+    // Inscription réussie
     if (response.ok) {
       window.alert('Votre compte a été créé avec succès !');
       router.push('/auth/login');
@@ -61,16 +76,16 @@ export default function RegisterScreen() {
       window.alert(message);
     }
 
-    // router.push('/auth/login');
-
   };
 
   return (
+    // Ajustement automatique de l'écran lors de l'ouverture du clavier
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={80}
     >
+      {/* Zone défilante contenant l'ensemble du formulaire */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"

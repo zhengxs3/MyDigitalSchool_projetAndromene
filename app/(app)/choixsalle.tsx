@@ -2,6 +2,8 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+
+// Écran permettant à l'utilisateur de choisir entre la création ou l'accès à une salle.
 export default function ChoixSalleScreen() {
   return (
     <View style={styles.container}>

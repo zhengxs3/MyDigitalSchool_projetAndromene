@@ -1,12 +1,12 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type RankingPlayer = {
@@ -118,7 +118,7 @@ export default function Victoire() {
 
       <TouchableOpacity
         style={styles.primaryButton}
-        onPress={() => router.replace("/attendre")}
+        onPress={() => router.replace("/briefing")}
       >
         <Text style={styles.primaryButtonText}>continuer jeu</Text>
       </TouchableOpacity>

@@ -11,11 +11,18 @@ import {
   View,
 } from 'react-native';
 
+// Écran permettant au créateur de la salle de sélectionner le nombre maximum de joueurs.
 export default function NbJoueur() {
+  // Récupération de l'identifiant de la salle depuis les paramètres de navigation
   const { roomId } = useLocalSearchParams();
+
+  // Nombre de joueurs actuellement sélectionné
   const [selected, setSelected] = useState(3);
+
+  // État indiquant si une requête est en cours
   const [loading, setLoading] = useState(false);
 
+  // Affiche un message adapté à la plateforme utilisée.
   const showMessage = (
     title: string,
     message: string,
@@ -34,6 +41,7 @@ export default function NbJoueur() {
     }
   };
 
+  // Enregistre le nombre de joueurs sélectionné puis crée la partie associée à la salle.
   const handleNb = async () => {
     if (!roomId) {
       showMessage('Erreur', 'Salle introuvable.');
@@ -41,8 +49,10 @@ export default function NbJoueur() {
     }
 
     try {
+      // Activation de l'état de chargement
       setLoading(true);
 
+      // Requête de mise à jour du nombre maximum de joueurs
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BACKEND_URI}/rooms/update-players/${roomId}`,
         {
@@ -64,6 +74,7 @@ export default function NbJoueur() {
         return;
       }
 
+      // Redirection vers la salle d'attente après création
       showMessage('Succès', 'Salle créée avec succès.', () => {
         router.push({
           pathname: '/(app)/attendre',

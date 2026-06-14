@@ -5,21 +5,26 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
+// Écran permettant à l'utilisateur de créer une nouvelle salle.
 export default function CreerSalleScreen() {
+  // Nom de la salle saisi par l'utilisateur
   const [roomName, setRoomName] = useState('');
+
+  // État indiquant si la création est en cours
   const [loading, setLoading] = useState(false);
 
+  // Affiche un message d'alerte adapté à la plateforme.
   const showMessage = (
     title: string,
     message: string
@@ -31,6 +36,7 @@ export default function CreerSalleScreen() {
     }
   };
 
+  // Crée une nouvelle salle via l'API.
   const handleSalle = async () => {
     if (!roomName.trim()) {
       showMessage(
@@ -41,24 +47,23 @@ export default function CreerSalleScreen() {
     }
 
     try {
-      setLoading(true);
+      setLoading(true); // Activation de l'état de chargement
 
-      // 获取用户
-      const userString =
-        await AsyncStorage.getItem('user');
+      // Récupération de l'utilisateur connecté depuis le stockage local
+      const userString = await AsyncStorage.getItem('user');
 
+      // Vérification de la connexion utilisateur
       if (!userString) {
-        showMessage(
-          'Erreur',
-          'Utilisateur non connecté.'
-        );
+        showMessage('Erreur', 'Utilisateur non connecté.');
         return;
       }
 
+      // Conversion des données utilisateur en objet JavaScript
       const user = JSON.parse(userString);
 
       console.log('USER = ', user);
 
+      // Envoi de la requête de création de salle au backend
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BACKEND_URI}/rooms/add`,
         {
@@ -83,6 +88,7 @@ export default function CreerSalleScreen() {
         return;
       }
 
+      // Redirection vers l'écran de sélection du nombre de joueurs
       router.push({
         pathname: '/(app)/nbjoueur',
         params: {
@@ -91,14 +97,13 @@ export default function CreerSalleScreen() {
       });
     } catch (error) {
       console.log('ERROR = ', error);
-    console.log('BACKEND = ', process.env.EXPO_PUBLIC_BACKEND_URI);
 
       showMessage(
         'Erreur',
         'Impossible de se connecter au serveur.'
       );
     } finally {
-      setLoading(false);
+      setLoading(false); // Désactivation de l'état de chargement
     }
   };
 

@@ -3,13 +3,13 @@ import { getCurrentPlayer } from "@/hooks/usePlayer";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type RessourcesType = {
@@ -23,13 +23,15 @@ type RessourcesType = {
 export default function Ressources() {
   const { roomId, partyId } = useLocalSearchParams();
 
-  const [ressources, setRessources] =
-    useState<RessourcesType | null>(null);
+  // Ressources attribuées au joueur
+  const [ressources, setRessources] = useState<RessourcesType | null>(null);
 
   const [loading, setLoading] = useState(true);
 
   const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URI;
 
+  // Charge les informations du joueur et ses ressources.
+  // Si aucune ressource n'existe encore, elles sont générées puis sauvegardées dans la base de données.
   const loadUserAndResources = async () => {
     try {
       if (!backendUrl) {
@@ -37,11 +39,13 @@ export default function Ressources() {
         return;
       }
 
+      // Récupération du joueur courant
       const result = await getCurrentPlayer(
         roomId,
         backendUrl
       );
 
+      // Arrêt si aucun joueur n'est trouvé
       if (!result) {
         return;
       }
@@ -53,6 +57,7 @@ export default function Ressources() {
 
       const rawResources = player.resources;
 
+      // Vérification de l'existence des ressources
       const hasResources =
         rawResources !== null &&
         rawResources !== undefined &&
@@ -62,16 +67,19 @@ export default function Ressources() {
           rawResources.length === 0);
 
       if (hasResources) {
+         // Conversion des ressources si elles sont stockées sous forme de chaîne JSON
         const savedResources =
           typeof rawResources === "string"
             ? JSON.parse(rawResources)
             : rawResources;
 
+        // Chargement des ressources existantes
         setRessources(savedResources as RessourcesType);
 
         return;
       }
 
+      // Génération de nouvelles ressources
       const generatedResources = generateResources();
 
       const saveResponse = await fetch(
@@ -108,10 +116,12 @@ export default function Ressources() {
     }
   };
 
+  // Chargement des ressources lors de l'ouverture de la page.
   useEffect(() => {
     loadUserAndResources();
   }, []);
 
+  // Validation des ressources et passage à l'étape suivante.
   const handleContinue = () => {
     router.replace({
       pathname: "/(app)/decisions",

@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 
+// Type représentant une salle de jeu
 type Room = {
   id: number;
   code: string;
@@ -20,6 +21,7 @@ type Room = {
   created_by: number;
 };
 
+// Type représentant un joueur
 type Player = {
   id: number;
   user_id: number;
@@ -30,6 +32,7 @@ type Player = {
   isHost?: boolean;
 };
 
+// Type représentant un message du chat
 type Message = {
   id: number | string;
   user_id?: number;
@@ -39,15 +42,28 @@ type Message = {
 };
 
 export default function Attendre() {
+  // Identifiant de la salle et de la partie récupérés depuis l'URL
   const { roomId, partyId } = useLocalSearchParams();
 
+  // Informations de l'utilisateur connecté
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Informations de la salle
   const [room, setRoom] = useState<Room | null>(null);
+
+  // Liste des joueurs présents dans la salle
   const [players, setPlayers] = useState<Player[]>([]);
+
+  // Liste des messages du chat
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // Texte actuellement saisi dans le champ de discussion
   const [messageText, setMessageText] = useState('');
+
+  // État de chargement de la page
   const [loading, setLoading] = useState(true);
 
+  // Affiche un message selon la plateforme utilisée
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === 'web') {
       window.alert(message);
@@ -56,19 +72,24 @@ export default function Attendre() {
     }
   };
 
+  // Charge les informations de l'utilisateur depuis le stockage loca
   const loadUser = async () => {
+    // Récupération des données utilisateur enregistrées
     const userString = await AsyncStorage.getItem('user');
 
+    // Vérification de la présence d'un utilisateur connecté
     if (!userString) {
       showMessage('Erreur', 'Utilisateur non connecté.');
       setLoading(false);
       return;
     }
 
+    // Conversion de la chaîne JSON en objet JavaScript
     const user = JSON.parse(userString);
     setCurrentUser(user);
   };
 
+  // Récupère les informations de la salle d'attente
   const fetchWaitingRoom = async () => {
     if (!currentUser) return;
 
@@ -85,10 +106,11 @@ export default function Attendre() {
         return;
       }
 
-      setRoom(data.room);
-      setPlayers(data.players);
-      setMessages(data.messages ?? []);
+      setRoom(data.room); // Mise à jour des informations de la salle
+      setPlayers(data.players); // Mise à jour de la liste des joueurs
+      setMessages(data.messages ?? []); // Mise à jour des messages du chat
 
+      // Si la partie est lancée, redirection vers l'écran des rôles
       if (data.started) {
         router.replace({
           pathname: '/(app)/role',
@@ -107,44 +129,56 @@ export default function Attendre() {
     }
   };
 
+  // Chargement de l'utilisateur au démarrage de la page
   useEffect(() => {
     loadUser();
   }, []);
 
+  // Actualisation automatique des données de la salle toutes les 2 secondes
   useEffect(() => {
     if (!roomId || !currentUser) return;
 
     fetchWaitingRoom();
 
+    // Création d'un intervalle de rafraîchissement
     const interval = setInterval(() => {
       fetchWaitingRoom();
     }, 2000);
 
+    // Suppression de l'intervalle lors du démontage du composant
     return () => clearInterval(interval);
   }, [roomId, currentUser]);
 
+  // Code d'invitation de la salle
   const codeSalle = room?.code ?? '';
 
+  // Joueur correspondant à l'utilisateur connecté
   const me = players.find((player) => player.isMe);
 
+  // Vérifie si l'utilisateur est l'hôte de la partie
   const isHost =
     room && currentUser
       ? Number(room.created_by) === Number(currentUser.id)
       : false;
 
+  // Vérifie si le joueur est prêt
   const isReady = me?.status === 'ready';
 
+  // Copie le code de la salle dans le presse-papiers
   const handleCopy = () => {
     if (!codeSalle) return;
 
     if (Platform.OS === 'web') {
+      // Copie du code dans le presse-papiers (Web uniquement)
       navigator.clipboard.writeText(codeSalle);
     }
 
     showMessage('Succès', 'Code copié.');
   };
 
+  // Envoie un message dans le chat de groupe
   const handleSendMessage = async () => {
+    // Vérification que le message n'est pas vide
     if (!messageText.trim() || !currentUser || !partyId) return;
 
     try {
@@ -173,8 +207,9 @@ export default function Attendre() {
         return;
       }
 
+      // Actualisation des messages après envoi
       setMessages(data.messages ?? []);
-      setMessageText('');
+      setMessageText(''); // Réinitialisation du champ de saisie
       fetchWaitingRoom();
     } catch (error) {
       console.log(error);
@@ -182,6 +217,7 @@ export default function Attendre() {
     }
   };
 
+  // Passe le joueur au statut prêt
   const handleReady = async () => {
     if (!currentUser || !partyId) return;
 
@@ -216,6 +252,7 @@ export default function Attendre() {
     }
   };
 
+  // Annule le statut prêt du joueur
   const handleUnready = async () => {
     if (!currentUser || !partyId) return;
 
@@ -253,14 +290,17 @@ export default function Attendre() {
     }
   };
 
+  // Lance la partie lorsque tous les joueurs sont prêts
   const handleStart = async () => {
     if (!room) return;
 
+    // Vérification que l'utilisateur est l'hôte
     if (!isHost) {
       showMessage('Erreur', 'Seul l’hôte peut lancer la partie.');
       return;
     }
 
+    // Vérification que tous les joueurs sont prêts
     const allReady = players.every(
       (player) => player.status === 'ready'
     );

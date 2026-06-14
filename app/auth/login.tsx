@@ -4,23 +4,26 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function LoginScreen() {
-  const [pseudo, setPseudo] = useState('');
-  const [password, setPassword] = useState('');
+  const [pseudo, setPseudo] = useState(''); // État permettant de stocker le pseudonyme saisi
+  const [password, setPassword] = useState(''); // État permettant de stocker le mot de passe saisi
 
+  // Fonction de connexion utilisateur
   const handleLogin = async () => {
     try {
+
+      // Envoi d'une requête de connexion au serveur
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BACKEND_URI}/users/login`,
         {
@@ -29,6 +32,8 @@ export default function LoginScreen() {
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
+
+          // Données envoyées à l'API
           body: JSON.stringify({
             pseudo,
             password,
@@ -36,10 +41,12 @@ export default function LoginScreen() {
         }
       );
 
+      // Récupération de la réponse du serveur
       const data = await response.json();
 
+      // Connexion réussie
       if (response.ok) {
-        // 保存用户
+        // Sauvegarde des informations utilisateur dans le stockage local
         await AsyncStorage.setItem(
           'user',
           JSON.stringify(data.user)
@@ -47,18 +54,9 @@ export default function LoginScreen() {
 
         console.log('USER SAVED = ', data.user);
 
-        if (Platform.OS === 'web') {
-          window.alert(`Connexion réussie ! Bienvenue ${pseudo}`);
-          router.push('/(app)/choixsalle');
-        } else {
-          Alert.alert('Succès', 'Connexion réussie !', [
-            {
-              text: 'OK',
-              onPress: () => router.push('/(app)/choixsalle'),
-            },
-          ]);
-        }
+        router.push('/(app)/choixsalle') // Redirection après validation
       } else {
+        // Échec de la connexion
         if (Platform.OS === 'web') {
           window.alert(
             data.message || 'Pseudo ou mot de passe incorrect.'
@@ -70,18 +68,22 @@ export default function LoginScreen() {
           );
         }
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error) {;
+      console.log(error); // Gestion des erreurs réseau ou serveur
+
+      const message = String(error);
 
       if (Platform.OS === 'web') {
-        window.alert('Erreur serveur.');
+        window.alert(message);
       } else {
-        Alert.alert('Erreur', 'Erreur serveur.');
+        Alert.alert('Erreur', message);
       }
     }
   };
 
+
   return (
+    // Permet d'ajuster automatiquement l'affichage lors de l'ouverture du clavier
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -91,6 +93,8 @@ export default function LoginScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+
+        {/* Zone d'affichage du logo */}
         <View style={styles.logoArea}>
           <Image
             source={require('@/assets/images/logo3.png')}
@@ -99,10 +103,10 @@ export default function LoginScreen() {
           />
         </View>
 
+        {/* Carte contenant le formulaire de connexion */}
         <View style={styles.card}>
           <Text style={styles.title}>Se connecter</Text>
-
-          <Text style={styles.label}>Pseudo</Text>
+          <Text style={styles.label}>Nom</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
@@ -121,22 +125,23 @@ export default function LoginScreen() {
               style={styles.textInput}
               placeholder="••••••••"
               placeholderTextColor="#6B7280"
-              secureTextEntry
+              secureTextEntry  // Masque les caractères du mot de passe
               value={password}
               onChangeText={setPassword}
             />
           </View>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLogin}
-          >
+          {/* Bouton de connexion */}
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>
               Se connecter
             </Text>
           </TouchableOpacity>
+
         </View>
+
       </ScrollView>
+
     </KeyboardAvoidingView>
   );
 }

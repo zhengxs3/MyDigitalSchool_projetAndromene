@@ -24,15 +24,28 @@ type SecretRole = {
 };
 
 export default function Role() {
+  // Récupération des identifiants de la salle et de la partie
   const { roomId, partyId } = useLocalSearchParams();
 
+  // Utilisateur actuellement connecté
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Liste des joueurs présents dans la partie
   const [players, setPlayers] = useState<CurrentPlayer[]>([]);
+
+  // Rôle secret attribué au joueur
   const [myRole, setMyRole] = useState<SecretRole | null>(null);
+
+  // État de chargement de la page
   const [loading, setLoading] = useState(true);
 
   const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URI;
 
+  /**
+   * Charge les informations du joueur et récupère son rôle.
+   * Si aucun rôle n'est encore enregistré, un rôle aléatoire
+   * est généré puis sauvegardé dans la base de données.
+   */
   const loadUserAndRole = async () => {
     try {
       if (!backendUrl) {
@@ -88,10 +101,12 @@ export default function Role() {
     }
   };
 
+  // Chargement du rôle lors de l'ouverture de la page.
   useEffect(() => {
     loadUserAndRole();
   }, []);
 
+  // Validation du rôle et passage à l'écran de briefing.
   const handleContinue = () => {
     router.replace({
       pathname: "/(app)/briefing",
