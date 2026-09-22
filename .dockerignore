@@ -1,0 +1,5 @@
+vendor
+tmp
+logs
+.git
+node_modules
